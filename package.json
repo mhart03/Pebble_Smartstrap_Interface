@@ -1,0 +1,33 @@
+{
+    "author": "Pebble Technology",
+    "dependencies": {},
+    "keywords": [],
+    "name": "simple-menu",
+    "pebble": {
+        "displayName": "Simple Menu",
+        "enableMultiJS": false,
+        "messageKeys": {},
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/menu_icon_simplicity.png",
+                    "name": "IMAGE_MENU_ICON_1",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk"
+        ],
+        "uuid": "69a53987-379e-4ae7-a3c2-d08e5ffe8511",
+        "watchapp": {
+            "watchface": false
+        }
+    },
+    "version": "2.0.0"
+}
