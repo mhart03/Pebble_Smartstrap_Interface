@@ -4,6 +4,11 @@
 #define NUM_FIRST_MENU_ITEMS 1
 #define NUM_SECOND_MENU_ITEMS 1
 
+SmartstrapAttribute *attribute;
+static bool s_service_available;
+// Pointer to the attribute buffer
+size_t buff_size;
+uint8_t *buffer;
 static Window *s_main_window;
 static SimpleMenuLayer *s_simple_menu_layer;
 static SimpleMenuSection s_menu_sections[NUM_MENU_SECTIONS];
@@ -28,8 +33,22 @@ static void special_select_callback(int index, void *ctx) {
 
   if (door_lock_status) {
     menu_item->subtitle = "Door Locked.";
+    // Begin the write request, getting the buffer and its length
+    smartstrap_attribute_begin_write(attribute, &buffer, &buff_size);
+    // Store the data to be written to this attribute
+    snprintf((char*)buffer, buff_size, "Lock Door");
+    // End the write request, and send the data, not expecting a response
+    smartstrap_attribute_end_write(attribute, buff_size, false);
+        
   } else {
     menu_item->subtitle = "Door Unlocked.";
+    // Begin the write request, getting the buffer and its length
+    smartstrap_attribute_begin_write(attribute, &buffer, &buff_size);
+    // Store the data to be written to this attribute
+    snprintf((char*)buffer, buff_size, "Unlock Door");
+    // End the write request, and send the data, not expecting a response
+    smartstrap_attribute_end_write(attribute, buff_size, false);
+        
   }
 
   
@@ -78,7 +97,43 @@ void main_window_unload(Window *window) {
   gbitmap_destroy(s_menu_icon_image);
 }
 
+static void strap_availability_handler(SmartstrapServiceId service_id, bool is_available) {
+  // A service's availability has changed
+  APP_LOG(APP_LOG_LEVEL_INFO, "Service %d is %s available", (int)service_id, is_available ? "now" : "NOT");
+
+  // Remember if the raw service is available
+  s_service_available = (is_available && service_id == SMARTSTRAP_RAW_DATA_SERVICE_ID);
+}
+
+static void strap_notify_handler(SmartstrapAttribute *attribute) {
+  // this will occur if the smartstrap notifies pebble
+  //probably wont be used in our case
+  vibes_short_pulse();
+}
+
+static void strap_write_handler(SmartstrapAttribute *attribute,
+                                SmartstrapResult result) {
+  // A write operation has been attempted
+  if(result != SmartstrapResultOk) {
+    // Handle the failure
+    //APP_LOG(APP_LOG_LEVEL_ERROR, "Smartstrap error occured: %s", smartstrap_result_to_string(result));
+  }
+}
+
+static void strap_init() {
+  attribute = smartstrap_attribute_create(SMARTSTRAP_RAW_DATA_SERVICE_ID, SMARTSTRAP_RAW_DATA_ATTRIBUTE_ID, 64);
+
+  // Subscribe to smartstrap events
+  smartstrap_subscribe((SmartstrapHandlers) {
+    .availability_did_change = strap_availability_handler,
+    .notified = strap_notify_handler,
+    .did_write = strap_write_handler,  
+  }); 
+}
+
 static void init() {
+  strap_init();
+  
   s_main_window = window_create();
   window_set_window_handlers(s_main_window, (WindowHandlers) {
     .load = main_window_load,
