@@ -4,7 +4,9 @@
 #define NUM_FIRST_MENU_ITEMS 1
 #define NUM_SECOND_MENU_ITEMS 1
 
-SmartstrapAttribute *attribute;
+static SmartstrapAttribute *attribute;
+static SmartstrapAttribute *s_raw_attribute;
+static SmartstrapAttribute *s_attr_attribute;
 static bool s_service_available;
 // Pointer to the attribute buffer
 size_t buff_size;
@@ -36,7 +38,7 @@ static void special_select_callback(int index, void *ctx) {
     // Begin the write request, getting the buffer and its length
     smartstrap_attribute_begin_write(attribute, &buffer, &buff_size);
     // Store the data to be written to this attribute
-    snprintf((char*)buffer, buff_size, "Lock Door");
+    snprintf((char*)buffer, buff_size, "123");
     // End the write request, and send the data, not expecting a response
     smartstrap_attribute_end_write(attribute, buff_size, false);
         
@@ -45,7 +47,7 @@ static void special_select_callback(int index, void *ctx) {
     // Begin the write request, getting the buffer and its length
     smartstrap_attribute_begin_write(attribute, &buffer, &buff_size);
     // Store the data to be written to this attribute
-    snprintf((char*)buffer, buff_size, "Unlock Door");
+    snprintf((char*)buffer, buff_size, "456");
     // End the write request, and send the data, not expecting a response
     smartstrap_attribute_end_write(attribute, buff_size, false);
         
@@ -128,7 +130,12 @@ static void strap_init() {
     .availability_did_change = strap_availability_handler,
     .notified = strap_notify_handler,
     .did_write = strap_write_handler,  
-  }); 
+  
+  });
+  s_raw_attribute = smartstrap_attribute_create(0, 0, 2000);
+    //s_attr_attribute = smartstrap_attribute_create(0x1001, 0x1001, 20);
+    
+    attribute = smartstrap_attribute_create(0x1001, 0x1001, 20);
 }
 
 static void init() {
